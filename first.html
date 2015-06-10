@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title> testing </title>
+<script src="http://d3js.org/d3.v2.min.js?2.10.1"></script>
+
+<style>
+
+body {
+  font: 10px sans-serif;
+  margin: 0;
+}
+
+
+
+.axis {
+  shape-rendering: crispEdges;
+}
+
+.x.axis line {
+  stroke: #000;
+}
+
+.x.axis .minor {
+ stroke-opacity: 1;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.y.axis line, .y.axis path {
+  fill: none;
+  stroke: #000;
+}
+
+</style>
+</head>
+
+<body>
+<script>
+
+function drawGraph(data){
+
+  var height = data.dimensions.height;
+  var width = data.dimensions.width;
+
+  var charWidth = width - (data.dimensions.margin.left + data.dimensions.margin.right);
+  var charHeight = height - (data.dimensions.margin.top + data.dimensions.margin.bottom);
+
+  var plotData = data.dat ;
+  //var numberOfBars = plotData.length;
+  //var barPadding = 5;
+
+  // Math.max.apply(Math, data.dat.map(function(o){return o.x;}));
+  //var barWidth= (charWidth/numberOfBars) - barPadding;
+
+  var xScale = d3.scale.ordinal()
+    .domain(plotData.map(function(d){
+      return d.x;
+    }))
+    .rangeRoundBands([0, charWidth], .1);
+   
+
+  var yScale = d3.scale.linear()
+    .domain([ d3.max(plotData, function(d){
+      return d.y;
+    }),0])
+    .range([0,charHeight]);
+
+  var xAxis = d3.svg.axis()
+    .scale(xScale);
+   // .ticks([numberOfBars]);
+    //.orient("bottom");
+
+  var yAxis = d3.svg.axis()
+    .scale(yScale)
+    .orient("left");
+    // .ticks(10, "%");
+
+
+  
+   //var colour=d3.scale.linear()
+     //         .domain([0,20])
+       //       .range(["red","blue"]);
+
+   //var axis  =d3.svg.axis()
+            //  .scale(widthscale) ;        
+
+   //var dataArr=[10,20,30];
+  //console.log(charHeight) ;
+  //console.log(data.dom.width) ;
+
+  var canvas = d3.select("body") 
+    .append("svg") 
+    .attr("width",width)
+    .attr("height",height)
+    .style("background-color", "#c7e9c0");
+
+  var chart = canvas.append('g')
+    .attr("transform", "translate(" + data.dimensions.margin.left + "," + data.dimensions.margin.top + ")");
+    // .append('g')
+    //   .attr("transform", "translate(50, 50)");
+    //.call(axis);
+
+  var bars = chart.selectAll("rect")
+    .data(data.dat)
+    .enter()
+    .append("rect")
+    .attr("fill",data.dom.fill)
+    .attr("width",xScale.rangeBand())
+    .attr("height",function(d) { return (charHeight-yScale(d.y)); } )
+    .attr("x",function(d) { return xScale(d.x); })
+    .attr("y",function(d) {return yScale(d.y); })
+
+    .on('mouseover', function(d) {
+    d3.select(this)
+      .attr('fill', data.dom.hover);
+    })
+    .on('mouseout', function(d) {
+      d3.select(this)
+        .attr('fill', data.dom.fill);
+    });
+
+
+  chart.append("g")
+    .attr("class", "x axis")
+    .attr("transform","translate(0," + charHeight + ")")
+    .call(xAxis)
+    .append("text")
+    .attr("x",charWidth-(data.dimensions.margin.right + 5))
+    .attr("y",35)
+    .text(data.axes[0].label);
+
+  chart.append("g")
+    .attr("class", "y axis")
+    //.attr("transform","rotate(90)")
+     //.attr("transform","translate(0," + charHeight + ")")
+    .call(yAxis)
+    .append("text")
+       .attr("transform", "rotate(-90)")
+       .attr("y", 6)
+       .attr("dy", ".71em")
+       .style("text-anchor", "end")
+       .text(data.axes[1].label);          
+};
+
+d3.json("sample.json", drawGraph);
+
+</script>
+</body>
+</html>
